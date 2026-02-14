@@ -1,66 +1,111 @@
-# Embedding Matchmaking
+#Matchmaking with Sentence Embeddings#
 
-_"Words can't describe how unique your interests are... but coordinates can" - Sean Ashley, circa 2023_
+This project explores how sentence embeddings can be used to measure similarity between classmates based on short descriptions of their interests. The goal is to analyze how data changes and model choice impact similarity rankings in a simple matchmaking pipeline.
 
-A flattened embedding space of names clustered based on their interests using the sentence-transformers all-MiniLM-L6-v2 model. Created for the UW Startups S23 Kickoff event with guidance from [Jacky Zhao](https://jzhao.xyz/) and [Sean Ashley](https://www.linkedin.com/in/sean-ashley). [Simha Kalimipalli](https://github.com/Simha-Kalimipalli) later aded interactivity!
+##The pipeline consists of three components:##
 
-![Sample output of script](https://github.com/ansonyuu/matchmaking/blob/main/sample.png?raw=true)
+- Data – Classmate names and interest descriptions (classmates.csv)
 
-## Instructions for use
+- Embedding Model – Converts sentences into numerical representations
 
-1. Collect or format your data in the following format
+- Similarity & Ranking – Computes cosine similarity and ranks classmates
 
-| Name  | What are your interests? (or varying permutations of this question) |
-| ----- | ------------------------------------------------------------------- |
-| Alice | I love being the universal placeholder for every CS joke ever       |
-| Bob   | I too love being the universal placeholder for every CS joke        |
+- Setup
 
-2. Clone the repository
-3. Install all required packages using pip or conda:
+- ### Create and activate environment (example using uv):
 
-- `umap-learn`
-- `scikit-learn`
-- `scipy`
-- `sentence-transformers`
-- `matplotlib`
-- `pyvis`
-- `pandas`
-- `numpy`
-- `seaborn`
-- `branca`
-
-4. Replace `attendees.csv` in `visualizer.ipynb` with the path to your downloaded data
-5. Run all cells
-6. Bask in the glory of having an awesome new poster
-7. Make two (!) cool interactive visualizations
+uv venv
+source .venv/bin/activate
+uv pip install -r requirements.txt
 
 
-## What Are Embeddings?
+- ### Run the baseline embedding pipeline:
 
-When we read a sentence like “I enjoy hiking and swimming,” we immediately understand what it means. A computer, however, does not naturally understand language. To a computer, words are just symbols. Embeddings are a way of translating words and sentences into numbers so that a computer can compare and understand their meaning.
-
-Instead of storing a word as just text, an embedding represents it as a position in an abstract space — like placing ideas on a map. On this “meaning map,” words or sentences that express similar ideas are placed closer together. The actual numbers are not important to humans, but the distances between them are.
-
-For example, in our classmates dataset, one person might write “I like hiking, swimming, and enjoying nice weather.” Another might say “I enjoy being outdoors in nature and trail running.” Although the wording is different, both describe outdoor activities. When converted into sentence embeddings, these two descriptions end up close together on the meaning map. The system then recognizes that these classmates likely share similar interests.
-
-On the other hand, someone who writes “I love basketball and video games” would appear farther away from the outdoor group, because their interests are different.
-
-Sentence embeddings work by looking at patterns learned from large amounts of text. The model has seen how words are used together in many contexts, so it learns that “hiking,” “nature,” and “outdoors” are related concepts. When it processes a new sentence, it captures this relationship numerically.
-
-Once every classmate’s description is converted into this numerical form, we can measure how close they are to each other. If two descriptions are close in this space, the system assumes they have similar meaning. This is how the matchmaking model suggests top matches.
-
-In simple terms, embeddings allow a computer to compare meaning instead of just matching identical words. They turn language into something measurable, while still preserving the relationships between ideas.
-
-## Data Analysis
-
-To evaluate how sensitive sentence embeddings are to changes in the dataset, I modified three sentences in classmates.csv and compared the original and updated embeddings using cosine similarity.
-
-For Greg Kirczenow, I made a minor change by replacing “bike” with the synonym “cycle” in the sentence “Swim, bike, run.” The cosine similarity between the original and modified embedding was 0.843. Although this change did not alter the overall meaning, it still produced a noticeable shift in the embedding space. This suggests that even small wording changes can influence the numerical representation, especially when the sentence is short and each word carries significant weight.
-
-For Mohammad Pakdoust, I introduced a major semantic change by significantly altering the activities described, shifting the focus to a different topic. The cosine similarity dropped to 0.244, indicating a large movement in the embedding space. This confirms that embeddings are highly sensitive to changes in meaning rather than just surface wording.
-
-For Soundarya Venkataraman, I made another major change by reversing the sentiment toward outdoor activities (e.g., from enjoying the outdoors to avoiding it). The similarity score was 0.328, again reflecting a substantial shift.
-
-Overall, these results demonstrate that sentence embeddings are relatively robust to minor lexical substitutions but respond strongly when the core meaning changes. This highlights how small dataset idiosyncrasies can affect downstream similarity results and ultimately influence matchmaking outcomes.
+uv run python main.py
 
 
+This generates:
+
+embeddings.json
+
+What Are Embeddings?
+
+Sentence embeddings are a way to represent the meaning of text as numbers so that a computer can compare them. Instead of storing words as plain text, embedding models convert sentences into lists of numbers that capture semantic meaning.
+
+For example:
+
+“Swim, bike, run”
+
+“Swim, cycle, run”
+
+Even though the wording differs slightly (“bike” vs “cycle”), the meanings are very similar. An embedding model places these sentences close together in a conceptual meaning space.
+
+However, if we change the sentence to:
+
+“I avoid outdoor activities and prefer staying inside.”
+
+The meaning shifts significantly. As a result, the embedding will move far away in semantic space.
+
+Embeddings allow us to compute similarity between classmates using cosine similarity. If two embeddings are close, their interests are considered similar. This allows us to build a simple matchmaking system based on meaning rather than exact word matches.
+
+# Data Analysis
+
+To evaluate how sensitive embeddings are to dataset changes, I modified three sentences in classmates.csv:
+
+Minor change: Replaced “bike” with “cycle” in “Swim, bike, run.”
+
+Major change: Significantly altered the activities described for one classmate.
+
+Major sentiment change: Reversed the preference toward outdoor activities for another classmate.
+
+After regenerating embeddings and comparing them to the original embeddings using cosine similarity:
+
+Greg Kirczenow → 0.843 (moderate shift)
+
+Mohammad Pakdoust → 0.244 (large shift)
+
+Soundarya Venkataraman → 0.328 (large shift)
+
+These results show that embeddings are relatively robust to small wording changes but highly sensitive to changes in meaning. Even subtle dataset variations can influence similarity scores and matchmaking outcomes.
+
+Embedding Sensitivity Tests
+
+To evaluate the impact of model choice, I compared:
+
+Baseline: all-MiniLM-L6-v2
+
+Alternative: all-mpnet-base-v2
+
+Using both models, I ranked classmates by cosine similarity relative to the anchor person (Mohammad Pakdoust) and computed Spearman’s rank correlation between the two ranking lists.
+
+Spearman ρ = 0.3971 (p = 0.1145)
+
+This indicates relatively low agreement between rankings.
+
+Significant rank changes included:
+
+Jeevan Dhakal → −10 positions
+
+Somto Muotoe → +10 positions
+
+Nikola Kriznar → +8 positions
+
+The top 5 matches differed noticeably between the two models.
+
+These findings demonstrate that embedding model choice can materially affect downstream similarity-based matchmaking results. Different models capture semantic relationships differently, leading to meaningful changes in ranking behavior even when the dataset remains unchanged.
+
+Reproducibility
+
+Baseline model:
+
+sentence-transformers/all-MiniLM-L6-v2
+
+
+Alternative model:
+
+sentence-transformers/all-mpnet-base-v2
+
+
+To compare models:
+
+uv run python model_comparison.py --anchor "Mohammad Pakdoust"
