@@ -1,0 +1,418 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script>function neighbourhoodHighlight(params) {
+  // console.log("in nieghbourhoodhighlight");
+  allNodes = nodes.get({ returnType: "Object" });
+  // originalNodes = JSON.parse(JSON.stringify(allNodes));
+  // if something is selected:
+  if (params.nodes.length > 0) {
+    highlightActive = true;
+    var i, j;
+    var selectedNode = params.nodes[0];
+    var degrees = 2;
+
+    // mark all nodes as hard to read.
+    for (let nodeId in allNodes) {
+      // nodeColors[nodeId] = allNodes[nodeId].color;
+      allNodes[nodeId].color = "rgba(200,200,200,0.5)";
+      if (allNodes[nodeId].hiddenLabel === undefined) {
+        allNodes[nodeId].hiddenLabel = allNodes[nodeId].label;
+        allNodes[nodeId].label = undefined;
+      }
+    }
+    var connectedNodes = network.getConnectedNodes(selectedNode);
+    var allConnectedNodes = [];
+
+    // get the second degree nodes
+    for (i = 1; i < degrees; i++) {
+      for (j = 0; j < connectedNodes.length; j++) {
+        allConnectedNodes = allConnectedNodes.concat(
+          network.getConnectedNodes(connectedNodes[j])
+        );
+      }
+    }
+
+    // all second degree nodes get a different color and their label back
+    for (i = 0; i < allConnectedNodes.length; i++) {
+      // allNodes[allConnectedNodes[i]].color = "pink";
+      allNodes[allConnectedNodes[i]].color = "rgba(150,150,150,0.75)";
+      if (allNodes[allConnectedNodes[i]].hiddenLabel !== undefined) {
+        allNodes[allConnectedNodes[i]].label =
+          allNodes[allConnectedNodes[i]].hiddenLabel;
+        allNodes[allConnectedNodes[i]].hiddenLabel = undefined;
+      }
+    }
+
+    // all first degree nodes get their own color and their label back
+    for (i = 0; i < connectedNodes.length; i++) {
+      // allNodes[connectedNodes[i]].color = undefined;
+      allNodes[connectedNodes[i]].color = nodeColors[connectedNodes[i]];
+      if (allNodes[connectedNodes[i]].hiddenLabel !== undefined) {
+        allNodes[connectedNodes[i]].label =
+          allNodes[connectedNodes[i]].hiddenLabel;
+        allNodes[connectedNodes[i]].hiddenLabel = undefined;
+      }
+    }
+
+    // the main node gets its own color and its label back.
+    // allNodes[selectedNode].color = undefined;
+    allNodes[selectedNode].color = nodeColors[selectedNode];
+    if (allNodes[selectedNode].hiddenLabel !== undefined) {
+      allNodes[selectedNode].label = allNodes[selectedNode].hiddenLabel;
+      allNodes[selectedNode].hiddenLabel = undefined;
+    }
+  } else if (highlightActive === true) {
+    // console.log("highlightActive was true");
+    // reset all nodes
+    for (let nodeId in allNodes) {
+      // allNodes[nodeId].color = "purple";
+      allNodes[nodeId].color = nodeColors[nodeId];
+      // delete allNodes[nodeId].color;
+      if (allNodes[nodeId].hiddenLabel !== undefined) {
+        allNodes[nodeId].label = allNodes[nodeId].hiddenLabel;
+        allNodes[nodeId].hiddenLabel = undefined;
+      }
+    }
+    highlightActive = false;
+  }
+
+  // transform the object into an array
+  var updateArray = [];
+  if (params.nodes.length > 0) {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        // console.log(allNodes[nodeId]);
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  } else {
+    // console.log("Nothing was selected");
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        // console.log(allNodes[nodeId]);
+        // allNodes[nodeId].color = {};
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  }
+}
+
+function filterHighlight(params) {
+  allNodes = nodes.get({ returnType: "Object" });
+  // if something is selected:
+  if (params.nodes.length > 0) {
+    filterActive = true;
+    let selectedNodes = params.nodes;
+
+    // hiding all nodes and saving the label
+    for (let nodeId in allNodes) {
+      allNodes[nodeId].hidden = true;
+      if (allNodes[nodeId].savedLabel === undefined) {
+        allNodes[nodeId].savedLabel = allNodes[nodeId].label;
+        allNodes[nodeId].label = undefined;
+      }
+    }
+
+    for (let i=0; i < selectedNodes.length; i++) {
+      allNodes[selectedNodes[i]].hidden = false;
+      if (allNodes[selectedNodes[i]].savedLabel !== undefined) {
+        allNodes[selectedNodes[i]].label = allNodes[selectedNodes[i]].savedLabel;
+        allNodes[selectedNodes[i]].savedLabel = undefined;
+      }
+    }
+
+  } else if (filterActive === true) {
+    // reset all nodes
+    for (let nodeId in allNodes) {
+      allNodes[nodeId].hidden = false;
+      if (allNodes[nodeId].savedLabel !== undefined) {
+        allNodes[nodeId].label = allNodes[nodeId].savedLabel;
+        allNodes[nodeId].savedLabel = undefined;
+      }
+    }
+    filterActive = false;
+  }
+
+  // transform the object into an array
+  var updateArray = [];
+  if (params.nodes.length > 0) {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  } else {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  }
+}
+
+function selectNode(nodes) {
+  network.selectNodes(nodes);
+  neighbourhoodHighlight({ nodes: nodes });
+  return nodes;
+}
+
+function selectNodes(nodes) {
+  network.selectNodes(nodes);
+  filterHighlight({nodes: nodes});
+  return nodes;
+}
+
+function highlightFilter(filter) {
+  let selectedNodes = []
+  let selectedProp = filter['property']
+  if (filter['item'] === 'node') {
+    let allNodes = nodes.get({ returnType: "Object" });
+    for (let nodeId in allNodes) {
+      if (allNodes[nodeId][selectedProp] && filter['value'].includes((allNodes[nodeId][selectedProp]).toString())) {
+        selectedNodes.push(nodeId)
+      }
+    }
+  }
+  else if (filter['item'] === 'edge'){
+    let allEdges = edges.get({returnType: 'object'});
+    // check if the selected property exists for selected edge and select the nodes connected to the edge
+    for (let edge in allEdges) {
+      if (allEdges[edge][selectedProp] && filter['value'].includes((allEdges[edge][selectedProp]).toString())) {
+        selectedNodes.push(allEdges[edge]['from'])
+        selectedNodes.push(allEdges[edge]['to'])
+      }
+    }
+  }
+  selectNodes(selectedNodes)
+}</script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+            
+            
+            
+            
+            
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.0.0-rc.4/css/tom-select.min.css" integrity="sha512-43fHB3GLgZfz8QXl1RPQ8O66oIgv3po9cJ5erMt1c4QISq9dYb195T3vr5ImnJPXuVroKcGBPXBFKETW8jrPNQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.0.0-rc.4/js/tom-select.complete.js" integrity="sha512-jeF9CfnvzDiw9G9xiksVjxR2lib44Gnovvkv+3CgCG6NXCD4gqlA5nDAVW5WjpA+i+/zKsUWV5xNEbW1X/HH0Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 750px;
+                 background-color: #222222;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+                <div id="select-menu" class="card-header">
+                    <div class="row no-gutters">
+                        <div class="col-10 pb-2">
+                            <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="selectNode([value]);"
+                            id="select-node"
+                            placeholder="Select node..."
+                            >
+                                <option selected>Select a Node by ID</option>
+                                
+                                    <option value="Greg Kirczenow">Greg Kirczenow</option>
+                                
+                                    <option value="Pawan Lingras">Pawan Lingras</option>
+                                
+                                    <option value="Nikita Neveditsin">Nikita Neveditsin</option>
+                                
+                                    <option value="Miguel Palafox">Miguel Palafox</option>
+                                
+                                    <option value="Jeevan Dhakal">Jeevan Dhakal</option>
+                                
+                                    <option value="Nikola Kriznar">Nikola Kriznar</option>
+                                
+                                    <option value="Binziya Siddik">Binziya Siddik</option>
+                                
+                                    <option value="Jayanta Sarker Shuva">Jayanta Sarker Shuva</option>
+                                
+                                    <option value="Mohammad Pakdoust">Mohammad Pakdoust</option>
+                                
+                                    <option value="Zilong Wang">Zilong Wang</option>
+                                
+                                    <option value="Somto Muotoe">Somto Muotoe</option>
+                                
+                                    <option value="Md Riad Arifin">Md Riad Arifin</option>
+                                
+                                    <option value="Mohamed Drira">Mohamed Drira</option>
+                                
+                                    <option value="Bhavik Kantilal Bhagat">Bhavik Kantilal Bhagat</option>
+                                
+                                    <option value="Soundarya Venkataraman">Soundarya Venkataraman</option>
+                                
+                                    <option value="Sridhar Vadla ">Sridhar Vadla </option>
+                                
+                                    <option value="Krushi Mistry">Krushi Mistry</option>
+                                
+                                    <option value="Md Musfiqur Rahman">Md Musfiqur Rahman</option>
+                                
+                            </select>
+                        </div>
+                        <div class="col-2 pb-2">
+                            <button type="button" class="btn btn-primary btn-block" onclick="neighbourhoodHighlight({nodes: []});">Reset Selection</button>
+                        </div>
+                    </div>
+                </div>
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+                  new TomSelect("#select-node",{
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      }
+                  });
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#a1c9f4", "font": {"color": "white"}, "id": "Greg Kirczenow", "label": "Greg Kirczenow", "shape": "dot", "title": "Greg Kirczenow: \n \nSwim, bike, run"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Pawan Lingras", "label": "Pawan Lingras", "shape": "dot", "title": "Pawan Lingras: \n \nI do not know what I like, but I travel, swim,\nrun, bike obsessively"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Nikita Neveditsin", "label": "Nikita Neveditsin", "shape": "dot", "title": "Nikita Neveditsin: \n \nI like hiking, swimming, traveling, enjoying nice\nweather and sun, and spending time with my family"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Miguel Palafox", "label": "Miguel Palafox", "shape": "dot", "title": "Miguel Palafox: \n \nI enjoy working out, traveling, studying, dancing,\nreading, and hanging out with my family and\nfriends."}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jeevan Dhakal", "label": "Jeevan Dhakal", "shape": "dot", "title": "Jeevan Dhakal: \n \nI enjoy doing calesthenics exercise, exploring new\nfoods and places, and watching movies."}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Nikola Kriznar", "label": "Nikola Kriznar", "shape": "dot", "title": "Nikola Kriznar: \n \nI like sports/gym, modern music, and competitive\ngaming"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Binziya Siddik", "label": "Binziya Siddik", "shape": "dot", "title": "Binziya Siddik: \n \nI enjoy playing sports, watching movies, like to\ntravel, do art and hear music."}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Jayanta Sarker Shuva", "label": "Jayanta Sarker Shuva", "shape": "dot", "title": "Jayanta Sarker Shuva: \n \nI enjoy reading books, hiking, and watching\ndocumentaries"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Mohammad Pakdoust", "label": "Mohammad Pakdoust", "shape": "dot", "title": "Mohammad Pakdoust: \n \nI am passionate about outdoor activities like\nhiking and camping, and I also enjoy movies and\nvideo games."}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Zilong Wang", "label": "Zilong Wang", "shape": "dot", "title": "Zilong Wang: \n \nI like sports, watching movies, history"}, {"color": "#ff9f9b", "font": {"color": "white"}, "id": "Somto Muotoe", "label": "Somto Muotoe", "shape": "dot", "title": "Somto Muotoe: \n \nI enjoy reading, cycling, playing chess, and\nstory-based video games (think Red Dead\nRedemption, Baldur\u0027s Gate, GTA)."}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Md Riad Arifin", "label": "Md Riad Arifin", "shape": "dot", "title": "Md Riad Arifin: \n \nI enjoy playing chess, shooting and watching\nthriller movies"}, {"color": "#d0bbff", "font": {"color": "white"}, "id": "Mohamed Drira", "label": "Mohamed Drira", "shape": "dot", "title": "Mohamed Drira: \n \nI\u2019m passionate about hiking, reading, meditation,\nmovies, and embracing new challenges"}, {"color": "#fab0e4", "font": {"color": "white"}, "id": "Bhavik Kantilal Bhagat", "label": "Bhavik Kantilal Bhagat", "shape": "dot", "title": "Bhavik Kantilal Bhagat: \n \nChess, Maths and Music."}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Soundarya Venkataraman", "label": "Soundarya Venkataraman", "shape": "dot", "title": "Soundarya Venkataraman: \n \nI like to play badminton, watch videos of clay pot\nmanufacturing. Also, i like to do pencil\nsketching."}, {"color": "#cfcfcf", "font": {"color": "white"}, "id": "Sridhar Vadla ", "label": "Sridhar Vadla ", "shape": "dot", "title": "Sridhar Vadla : \n \nIn my free time, I enjoy gaming and playing\ncricket and volleyball."}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Krushi Mistry", "label": "Krushi Mistry", "shape": "dot", "title": "Krushi Mistry: \n \nI like pottery, trying different cuisines,\ntravelling and also cricket"}, {"color": "#97c2fc", "font": {"color": "white"}, "id": "Md Musfiqur Rahman", "label": "Md Musfiqur Rahman", "shape": "dot", "title": "Md Musfiqur Rahman: \n \nI like to watch movies, reading detective novels\nand listening music."}]);
+                  edges = new vis.DataSet([{"from": "Greg Kirczenow", "to": "Pawan Lingras", "value": 0.4648832678794861}, {"from": "Greg Kirczenow", "to": "Nikita Neveditsin", "value": 0.6164553165435791}, {"from": "Greg Kirczenow", "to": "Miguel Palafox", "value": 0.6440938115119934}, {"from": "Greg Kirczenow", "to": "Jeevan Dhakal", "value": 0.6593255996704102}, {"from": "Greg Kirczenow", "to": "Nikola Kriznar", "value": 0.6637605428695679}, {"from": "Nikita Neveditsin", "to": "Miguel Palafox", "value": 0.237673819065094}, {"from": "Nikita Neveditsin", "to": "Jeevan Dhakal", "value": 0.29823440313339233}, {"from": "Nikita Neveditsin", "to": "Binziya Siddik", "value": 0.3041413426399231}, {"from": "Nikita Neveditsin", "to": "Jayanta Sarker Shuva", "value": 0.3126039505004883}, {"from": "Nikita Neveditsin", "to": "Mohammad Pakdoust", "value": 0.342190682888031}, {"from": "Pawan Lingras", "to": "Miguel Palafox", "value": 0.41075611114501953}, {"from": "Pawan Lingras", "to": "Zilong Wang", "value": 0.4524592161178589}, {"from": "Pawan Lingras", "to": "Binziya Siddik", "value": 0.4574434161186218}, {"from": "Pawan Lingras", "to": "Nikola Kriznar", "value": 0.4588446617126465}, {"from": "Somto Muotoe", "to": "Md Riad Arifin", "value": 0.2743712067604065}, {"from": "Somto Muotoe", "to": "Jayanta Sarker Shuva", "value": 0.34166598320007324}, {"from": "Somto Muotoe", "to": "Zilong Wang", "value": 0.3604890704154968}, {"from": "Somto Muotoe", "to": "Binziya Siddik", "value": 0.3668416142463684}, {"from": "Somto Muotoe", "to": "Nikola Kriznar", "value": 0.3845038414001465}, {"from": "Mohamed Drira", "to": "Mohammad Pakdoust", "value": 0.28217166662216187}, {"from": "Mohamed Drira", "to": "Jayanta Sarker Shuva", "value": 0.3209879398345947}, {"from": "Mohamed Drira", "to": "Jeevan Dhakal", "value": 0.3831440806388855}, {"from": "Mohamed Drira", "to": "Miguel Palafox", "value": 0.45174115896224976}, {"from": "Mohamed Drira", "to": "Nikita Neveditsin", "value": 0.4679114818572998}, {"from": "Mohammad Pakdoust", "to": "Jayanta Sarker Shuva", "value": 0.22138887643814087}, {"from": "Mohammad Pakdoust", "to": "Binziya Siddik", "value": 0.25510191917419434}, {"from": "Mohammad Pakdoust", "to": "Jeevan Dhakal", "value": 0.2940189838409424}, {"from": "Mohammad Pakdoust", "to": "Miguel Palafox", "value": 0.310721218585968}, {"from": "Bhavik Kantilal Bhagat", "to": "Nikola Kriznar", "value": 0.35099852085113525}, {"from": "Bhavik Kantilal Bhagat", "to": "Md Riad Arifin", "value": 0.3695140480995178}, {"from": "Bhavik Kantilal Bhagat", "to": "Somto Muotoe", "value": 0.4327172636985779}, {"from": "Bhavik Kantilal Bhagat", "to": "Zilong Wang", "value": 0.48250526189804077}, {"from": "Bhavik Kantilal Bhagat", "to": "Soundarya Venkataraman", "value": 0.48375219106674194}, {"from": "Sridhar Vadla ", "to": "Binziya Siddik", "value": 0.22641664743423462}, {"from": "Sridhar Vadla ", "to": "Md Riad Arifin", "value": 0.30471372604370117}, {"from": "Sridhar Vadla ", "to": "Miguel Palafox", "value": 0.3295031785964966}, {"from": "Sridhar Vadla ", "to": "Zilong Wang", "value": 0.3594743013381958}, {"from": "Sridhar Vadla ", "to": "Nikola Kriznar", "value": 0.36470282077789307}, {"from": "Soundarya Venkataraman", "to": "Binziya Siddik", "value": 0.2848779559135437}, {"from": "Soundarya Venkataraman", "to": "Krushi Mistry", "value": 0.3173563480377197}, {"from": "Soundarya Venkataraman", "to": "Md Riad Arifin", "value": 0.31779563426971436}, {"from": "Soundarya Venkataraman", "to": "Mohammad Pakdoust", "value": 0.3529316186904907}, {"from": "Soundarya Venkataraman", "to": "Md Musfiqur Rahman", "value": 0.3644227385520935}, {"from": "Binziya Siddik", "to": "Miguel Palafox", "value": 0.13185787200927734}, {"from": "Binziya Siddik", "to": "Jayanta Sarker Shuva", "value": 0.19956457614898682}, {"from": "Binziya Siddik", "to": "Jeevan Dhakal", "value": 0.2073817253112793}, {"from": "Binziya Siddik", "to": "Md Musfiqur Rahman", "value": 0.20831912755966187}, {"from": "Binziya Siddik", "to": "Md Riad Arifin", "value": 0.21819818019866943}, {"from": "Krushi Mistry", "to": "Binziya Siddik", "value": 0.3821016550064087}, {"from": "Krushi Mistry", "to": "Zilong Wang", "value": 0.3831539750099182}, {"from": "Krushi Mistry", "to": "Jeevan Dhakal", "value": 0.3885997533798218}, {"from": "Krushi Mistry", "to": "Nikola Kriznar", "value": 0.3956897258758545}, {"from": "Miguel Palafox", "to": "Jeevan Dhakal", "value": 0.18242573738098145}, {"from": "Miguel Palafox", "to": "Jayanta Sarker Shuva", "value": 0.2346411943435669}, {"from": "Zilong Wang", "to": "Binziya Siddik", "value": 0.23928797245025635}, {"from": "Zilong Wang", "to": "Nikola Kriznar", "value": 0.24545562267303467}, {"from": "Zilong Wang", "to": "Jayanta Sarker Shuva", "value": 0.2676049470901489}, {"from": "Zilong Wang", "to": "Md Musfiqur Rahman", "value": 0.27378344535827637}, {"from": "Zilong Wang", "to": "Md Riad Arifin", "value": 0.3371756076812744}, {"from": "Md Musfiqur Rahman", "to": "Jayanta Sarker Shuva", "value": 0.23547005653381348}, {"from": "Md Musfiqur Rahman", "to": "Miguel Palafox", "value": 0.3215048313140869}, {"from": "Md Musfiqur Rahman", "to": "Md Riad Arifin", "value": 0.32421380281448364}, {"from": "Nikola Kriznar", "to": "Binziya Siddik", "value": 0.2964322566986084}, {"from": "Nikola Kriznar", "to": "Md Riad Arifin", "value": 0.38265460729599}, {"from": "Jeevan Dhakal", "to": "Jayanta Sarker Shuva", "value": 0.2487422227859497}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+                    network.on("selectNode", neighbourhoodHighlight);
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
