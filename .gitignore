@@ -1,3 +1,8 @@
 .DS_Store
 lib/
 .venv/
+__pycache__/
+*.pyc
+.venv/
+Readme.md
+q4_umap.patch

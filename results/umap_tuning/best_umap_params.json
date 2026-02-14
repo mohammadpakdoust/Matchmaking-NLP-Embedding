@@ -1,0 +1,13 @@
+{
+  "best_value": 0.6813725490196079,
+  "best_params": {
+    "n_neighbors": 8,
+    "spread": 1.7687557059260566,
+    "min_dist": 0.40667366914112113,
+    "metric": "cosine"
+  },
+  "seed": 42,
+  "model": "sentence-transformers/all-MiniLM-L6-v2",
+  "csv": "classmates.csv",
+  "n_students": 18
+}
