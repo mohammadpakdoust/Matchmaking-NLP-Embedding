@@ -48,7 +48,7 @@ All team members reviewed and validated the final repository before submission.
 
 Below is the similarity visualization generated using UMAP and sentence embeddings:
 
-# What Are Embeddings?
+## What Are Embeddings?
 
 Imagine asking a computer to understand what people like to do — for example:
 
@@ -72,11 +72,11 @@ These sentences are different, but they share outdoor and physical activity them
 
 We then use dimension reduction (UMAP) to compress these large meaning fingerprints into 2D so we can visualize relationships between classmates.
 
-# Q2 – Data Analysis
+## Q2 – Data Analysis
 
 To understand how sensitive embeddings are to changes in data, we modified three sentences in classmates.csv.
 
-## We applied:
+### We applied:
 
 One major semantic change (changing a sentence to something conceptually different)
 
@@ -86,7 +86,7 @@ One moderate synonym swap
 
 We regenerated embeddings and compared them to the original ones using cosine similarity.
 
-## Results
+### Results
 
 Minor wording changes resulted in high similarity scores, meaning embeddings were stable.
 
@@ -94,11 +94,11 @@ Synonym replacements caused moderate shifts, but similarity remained relatively 
 
 Major semantic changes resulted in large drops in similarity, meaning the embedding model detected meaningful differences.
 
-## Conclusion
+### Conclusion
 
 Embeddings are robust to small wording changes but sensitive to meaningful semantic shifts. This confirms that the model captures meaning rather than exact wording.
 
-# Q3 – Model Comparison
+## Q3 – Model Comparison
 
 We compared two embedding models:
 
@@ -112,7 +112,7 @@ We evaluated ranking similarity using:
 
 Spearman Rank Correlation
 
-## Findings
+### Findings
 
 Spearman correlation ≈ 0.39–0.68 (depending on configuration)
 
@@ -120,15 +120,15 @@ Many top matches overlapped across models
 
 Some individuals experienced significant ranking shifts
 
-## Interpretation
+### Interpretation
 
 While both models capture similar global structure, they differ in fine-grained ranking decisions. This shows that model selection can meaningfully affect downstream similarity tasks.
 
-# Q4 – Dimension Reduction (UMAP) Analysis
+## Q4 – Dimension Reduction (UMAP) Analysis
 
 We analyzed how UMAP parameters and randomness impact visualization.
 
-## Seed Sensitivity
+### Seed Sensitivity
 
 We ran UMAP with multiple random seeds:
 
@@ -142,7 +142,7 @@ We ran UMAP with multiple random seeds:
 
 123
 
-## Observation
+### Observation
 
 Global clusters remained relatively stable.
 
@@ -152,7 +152,7 @@ Visual layouts shifted slightly across seeds.
 
 This shows that UMAP introduces stochastic variation, but preserves general neighborhood structure.
 
-## Hyperparameter Tuning (Optuna)
+### Hyperparameter Tuning (Optuna)
 
 We optimized UMAP parameters using Optuna with the objective of maximizing rank preservation (average Spearman correlation between high-dimensional and reduced-space distances).
 
@@ -170,7 +170,7 @@ Best Average Spearman Correlation
 
 ≈ 0.68
 
-### Interpretation
+## Interpretation
 
 Proper tuning significantly improves how well the 2D visualization preserves the original similarity structure.
 
@@ -178,7 +178,7 @@ Q5 – Robustness and Evaluation
 
 We evaluated how model choices and dimension reduction parameters influence similarity relationships.
 
-### Key observations:
+## Key observations:
 
 Embedding model choice impacts ranking stability.
 
@@ -190,49 +190,27 @@ Lower n_neighbors increases local clustering sensitivity.
 
 Overall, both the embedding component and the dimension reduction component meaningfully influence final outputs.
 
-# Project Structure
-matchmaking/
-│
-├── main.py
-├── environment.yml
-├── classmates.csv
-├── embeddings.json
-├── sample.png
-├── README.md
-│
-├── src/
-│   ├── embeddings.py
-│   ├── io_utils.py
-│   └── umap_eval.py
-│
-├── results/
-│   ├── umap_tuning/
-│   └── seed_sensitivity/
-│
-├── model_comparison.py
-├── umap_optuna_tuning.py
-├── umap_seed_sensitivity.py
-└── umap_render_best.py
-
-Reproducibility
+### Reproducibility
 
 Create environment (uv)
-uv venv
-uv sync
 
-Run embedding generation
-uv run python main.py
+`uv venv`
 
-Run model comparison
-uv run python model_comparison.py --anchor "Mohammad Pakdoust"
+`uv sync`
 
-Run UMAP seed sensitivity
-uv run python umap_seed_sensitivity.py --seeds 1 7 42 99 123
+### Run embedding generation
+`uv run python main.py`
 
-Run UMAP hyperparameter tuning
-uv run python umap_optuna_tuning.py --trials 20 --seed 42
+### Run model comparison
+`uv run python model_comparison.py --anchor "Mohammad Pakdoust"`
 
-Final Remarks
+### Run UMAP seed sensitivity
+`uv run python umap_seed_sensitivity.py --seeds 1 7 42 99 123`
+
+### Run UMAP hyperparameter tuning
+`uv run python umap_optuna_tuning.py --trials 20 --seed 42`
+
+## Final Remarks
 
 This project demonstrates how:
 
