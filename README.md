@@ -140,15 +140,15 @@ We analyzed how UMAP parameters and randomness impact visualization.
 
 We ran UMAP with multiple random seeds:
 
-1
+- 1
 
-7
+- 7
 
-42
+- 42
 
-99
+- 99
 
-123
+- 123
 
 ### Observation
 
@@ -188,13 +188,23 @@ We evaluated how model choices and dimension reduction parameters influence simi
 
 ### Key observations:
 
-Embedding model choice impacts ranking stability.
+- **Embedding model choice impacts ranking stability.**
 
-UMAP parameters strongly influence visual structure.
+Different transformer models (MiniLM vs MPNet) produced noticeable shifts in similarity rankings.
 
-Cosine metric performs better for semantic embeddings.
 
-Lower n_neighbors increases local clustering sensitivity.
+- **UMAP parameters strongly influence visual structure.**
+
+Changes in `n_neighbors`, `spread`, and `min_dist` significantly affected neighborhood preservation.
+
+- **Cosine metric performs better for semantic embeddings.**
+
+Since transformer embeddings encode angular similarity, cosine distance better reflects semantic closeness.
+
+- **Lower `n_neighbors` increases local clustering sensitivity.**
+
+Small values emphasize local structure but may reduce global stability.
+
 
 Overall, both the embedding component and the dimension reduction component meaningfully influence final outputs.
 
