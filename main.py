@@ -16,7 +16,7 @@ def main() -> None:
     BASE_DIR = Path(__file__).resolve().parent
     DATA_PATH = BASE_DIR / "classmates.csv"
     OUTPUT_PATH = BASE_DIR / "embeddings.json"
-    MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+    MODEL_NAME = "sentence-transformers/all-mpnet-base-v2"  # You can choose a different model if desired
 
     # ---- Load data ----
     names, texts = load_classmates(str(DATA_PATH))
