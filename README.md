@@ -4,21 +4,21 @@ This project explores how sentence embeddings and dimensionality reduction can b
 
 The pipeline consists of:
 
-Data – Text descriptions from classmates.csv
+- **Data** – Text descriptions from classmates.csv
 
-Embedding Model – SentenceTransformer models
+- **Embedding Model** – SentenceTransformer models
 
-Dimension Reduction – UMAP for visualization
+- **Dimension Reduction** – UMAP for visualization
 
 ## 👥 Team Contributions
 
 This project was completed collaboratively by:
 
-Mohammad Pakdoust
+- **Mohammad Pakdoust**
 
-Musfiqur Rahman
+- **Musfiqur Rahman**
 
-Krushi Mistry
+- **Krushi Mistry**
 
 ## Contribution Breakdown
 
@@ -42,11 +42,19 @@ Krushi Mistry
 
 - Implemented and analyzed Question 4 (Dimension Reduction / UMAP Analysis)
 
-All team members reviewed and validated the final repository before submission.
+**All team members reviewed and validated the final repository before submission.**
+
+
 
 ## Sample Visualization
 
 Below is the similarity visualization generated using UMAP and sentence embeddings:
+
+<p align="center">
+  <img src="sample.png" alt="UMAP Visualization" width="800">
+</p>
+
+
 
 ## What Are Embeddings?
 
@@ -78,21 +86,21 @@ To understand how sensitive embeddings are to changes in data, we modified three
 
 ### We applied:
 
-One major semantic change (changing a sentence to something conceptually different)
+- One major semantic change (changing a sentence to something conceptually different)
 
-One minor wording change (rephrasing without changing meaning)
+- One minor wording change (rephrasing without changing meaning)
 
-One moderate synonym swap
+- One moderate synonym swap
 
-We regenerated embeddings and compared them to the original ones using cosine similarity.
+- We regenerated embeddings and compared them to the original ones using cosine similarity.
 
 ### Results
 
-Minor wording changes resulted in high similarity scores, meaning embeddings were stable.
+- Minor wording changes resulted in high similarity scores, meaning embeddings were stable.
 
-Synonym replacements caused moderate shifts, but similarity remained relatively high.
+- Synonym replacements caused moderate shifts, but similarity remained relatively high.
 
-Major semantic changes resulted in large drops in similarity, meaning the embedding model detected meaningful differences.
+- Major semantic changes resulted in large drops in similarity, meaning the embedding model detected meaningful differences.
 
 ### Conclusion
 
@@ -102,9 +110,9 @@ Embeddings are robust to small wording changes but sensitive to meaningful seman
 
 We compared two embedding models:
 
-all-MiniLM-L6-v2
+- all-MiniLM-L6-v2
 
-all-mpnet-base-v2
+- all-mpnet-base-v2
 
 For each model, we generated embeddings and ranked classmates by similarity for a selected anchor person.
 
@@ -114,11 +122,11 @@ Spearman Rank Correlation
 
 ### Findings
 
-Spearman correlation ≈ 0.39–0.68 (depending on configuration)
+- Spearman correlation ≈ 0.39–0.68 (depending on configuration)
 
-Many top matches overlapped across models
+- Many top matches overlapped across models
 
-Some individuals experienced significant ranking shifts
+- Some individuals experienced significant ranking shifts
 
 ### Interpretation
 
@@ -144,13 +152,13 @@ We ran UMAP with multiple random seeds:
 
 ### Observation
 
-Global clusters remained relatively stable.
+- Global clusters remained relatively stable.
 
-Local positioning varied.
+- Local positioning varied.
 
-Visual layouts shifted slightly across seeds.
+- Visual layouts shifted slightly across seeds.
 
-This shows that UMAP introduces stochastic variation, but preserves general neighborhood structure.
+- This shows that UMAP introduces stochastic variation, but preserves general neighborhood structure.
 
 ### Hyperparameter Tuning (Optuna)
 
@@ -170,15 +178,15 @@ Best Average Spearman Correlation
 
 ≈ 0.68
 
-## Interpretation
+### Interpretation
 
 Proper tuning significantly improves how well the 2D visualization preserves the original similarity structure.
 
-Q5 – Robustness and Evaluation
+## Q5 – Robustness and Evaluation
 
 We evaluated how model choices and dimension reduction parameters influence similarity relationships.
 
-## Key observations:
+### Key observations:
 
 Embedding model choice impacts ranking stability.
 
@@ -210,16 +218,16 @@ Create environment (uv)
 ### Run UMAP hyperparameter tuning
 `uv run python umap_optuna_tuning.py --trials 20 --seed 42`
 
-## Final Remarks
+# Final Remarks
 
 This project demonstrates how:
 
-Text data is transformed into numerical representations.
+- Text data is transformed into numerical representations.
 
-Model choice affects similarity rankings.
+- Model choice affects similarity rankings.
 
-Dimension reduction influences visual interpretation.
+- Dimension reduction influences visual interpretation.
 
-Hyperparameter tuning improves structural preservation.
+- Hyperparameter tuning improves structural preservation.
 
 By systematically analyzing data sensitivity, model variation, and UMAP configuration, we better understand how each component impacts the final matchmaking visualization.
